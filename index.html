@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana NFT Gallery</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, rgba(153,69,255,0.1), rgba(20,241,149,0.1));
+            border-bottom: 1px solid rgba(153,69,255,0.2);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9945FF, #14F195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .wallet-info { display: flex; align-items: center; gap: 1rem; }
+        .nft-count { font-size: 0.9rem; color: #888; }
+        .wallet-address { font-size: 0.9rem; color: #aaa; font-family: monospace; }
+        .connect-button {
+            background: linear-gradient(135deg, #9945FF, #14F195);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 0.95rem;
+        }
+        .connect-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(153,69,255,0.4);
+        }
+        .connect-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .message { text-align: center; padding: 4rem 2rem; }
+        .message-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .message-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .message-text { color: #888; margin-bottom: 1.5rem; }
+        .message a { color: #9945FF; text-decoration: none; }
+        .loading-spinner {
+            display: inline-block;
+            width: 50px; height: 50px;
+            border: 4px solid rgba(153,69,255,0.2);
+            border-top-color: #9945FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .nft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .nft-card {
+            background: linear-gradient(135deg, rgba(153,69,255,0.05), rgba(20,241,149,0.05));
+            border: 1px solid rgba(153,69,255,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: cardFadeIn 0.5s ease-in forwards;
+            opacity: 0;
+        }
+        @keyframes cardFadeIn { to { opacity: 1; } }
+        .nft-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(153,69,255,0.3);
+        }
+        .nft-image-container {
+            width: 100%; padding-top: 100%;
+            position: relative; background: #1a1a1f; overflow: hidden;
+        }
+        .nft-image {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; transition: transform 0.3s;
+        }
+        .nft-card:hover .nft-image { transform: scale(1.05); }
+        .nft-info { padding: 1rem; }
+        .nft-name {
+            font-weight: 600; margin-bottom: 0.5rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .nft-collection {
+            display: inline-block;
+            background: rgba(153,69,255,0.2);
+            color: #9945FF;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center; align-items: center;
+            padding: 2rem;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1f;
+            border: 1px solid rgba(153,69,255,0.3);
+            border-radius: 16px;
+            max-width: 600px; width: 100%;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { position: relative; padding: 1.5rem; border-bottom: 1px solid rgba(153,69,255,0.2); }
+        .modal-close {
+            position: absolute; top: 1rem; right: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: none; width: 32px; height: 32px;
+            border-radius: 50%; color: white; font-size: 1.25rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.2); }
+        .modal-image { width: 100%; display: block; border-radius: 12px; }
+        .modal-body { padding: 1.5rem; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+        .modal-description { color: #aaa; line-height: 1.6; margin-bottom: 1rem; }
+        .modal-collection {
+            display: inline-block;
+            background: rgba(153,69,255,0.2);
+            color: #9945FF;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem; font-weight: 500;
+        }
+        .footer { text-align: center; padding: 2rem; color: #666; font-size: 0.85rem; }
+        .footer a { color: #9945FF; text-decoration: none; }
+        .retry-button {
+            background: rgba(153,69,255,0.2);
+            border: 1px solid #9945FF;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: white; font-weight: 600;
+            cursor: pointer;
+        }
+        .retry-button:hover { background: rgba(153,69,255,0.3); transform: translateY(-2px); }
+        @media (max-width: 768px) {
+            .header { padding: 1rem; }
+            .title { font-size: 1.25rem; }
+            .container { padding: 1rem; }
+            .nft-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">Solana NFT Gallery</div>
+        <div class="wallet-info">
+            <span class="nft-count" id="nftCount"></span>
+            <span class="wallet-address" id="walletAddress"></span>
+            <button class="connect-button" id="connectButton">Connect Wallet</button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="content"></div>
+    </div>
+    <div class="footer">Powered by <a href="https://helius.dev" target="_blank">Helius</a></div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img class="modal-image" id="modalImage" src="" alt="">
+                <div class="modal-title" id="modalTitle"></div>
+                <div class="modal-description" id="modalDescription"></div>
+                <div class="modal-collection" id="modalCollection"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const HELIUS_URL = 'https://mainnet.helius-rpc.com/?api-key=1d8740dc-e5f4-421c-b823-e1bad1889eff';
+        let walletPubkey = null;
+
+        function resolveUrl(url) {
+            if (!url) return '';
+            if (url.startsWith('ipfs://')) return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+            return url;
+        }
+
+        function truncate(addr) { return addr ? addr.slice(0,4) + '...' + addr.slice(-4) : ''; }
+
+        function showMessage(icon, title, text, retry) {
+            document.getElementById('content').innerHTML = `
+                <div class="message">
+                    <div class="message-icon">${icon}</div>
+                    <div class="message-title">${title}</div>
+                    <div class="message-text">${text}</div>
+                    ${retry ? '<button class="retry-button" onclick="loadNFTs()">Retry</button>' : ''}
+                </div>`;
+        }
+
+        function openModal(nft) {
+            document.getElementById('modalImage').src = resolveUrl(nft.content?.links?.image || nft.content?.files?.[0]?.uri);
+            document.getElementById('modalTitle').textContent = nft.content?.metadata?.name || 'Unnamed NFT';
+            document.getElementById('modalDescription').textContent = nft.content?.metadata?.description || 'No description available.';
+            const col = nft.grouping?.find(g => g.group_key === 'collection');
+            const mc = document.getElementById('modalCollection');
+            if (col) { mc.textContent = 'Collection: ' + col.group_value; mc.style.display = 'inline-block'; }
+            else { mc.style.display = 'none'; }
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+        function displayNFTs(nfts) {
+            if (!nfts || !nfts.length) { showMessage('🖼', 'No NFTs Found', 'This wallet doesn\'t own any NFTs yet.'); return; }
+            const grid = document.createElement('div');
+            grid.className = 'nft-grid';
+            nfts.forEach((nft, i) => {
+                const card = document.createElement('div');
+                card.className = 'nft-card';
+                card.style.animationDelay = (i * 0.05) + 's';
+                const img = resolveUrl(nft.content?.links?.image || nft.content?.files?.[0]?.uri);
+                const name = nft.content?.metadata?.name || 'Unnamed NFT';
+                const col = nft.grouping?.find(g => g.group_key === 'collection');
+                card.innerHTML = `
+                    <div class="nft-image-container">
+                        <img class="nft-image" src="${img}" alt="${name}" loading="lazy"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%231a1a1f%22 width=%22100%22 height=%22100%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22>No Image</text></svg>'">
+                    </div>
+                    <div class="nft-info">
+                        <div class="nft-name">${name}</div>
+                        ${col ? '<div class="nft-collection">' + col.group_value + '</div>' : ''}
+                    </div>`;
+                card.addEventListener('click', () => openModal(nft));
+                grid.appendChild(card);
+            });
+            document.getElementById('content').innerHTML = '';
+            document.getElementById('content').appendChild(grid);
+            document.getElementById('nftCount').textContent = nfts.length + ' NFTs';
+        }
+
+        async function loadNFTs() {
+            if (!walletPubkey) return;
+            showMessage('', 'Loading your NFTs...', '<div class="loading-spinner"></div>');
+            try {
+                const res = await fetch(HELIUS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        jsonrpc: '2.0', id: 'nft-gallery',
+                        method: 'getAssetsByOwner',
+                        params: { ownerAddress: walletPubkey, page: 1, limit: 50, displayOptions: { showFungible: false, showNativeBalance: false } }
+                    })
+                });
+                const data = await res.json();
+                if (data.error) { showMessage('', 'API Error', data.error.message || 'Failed to load', true); return; }
+                displayNFTs(data.result?.items || []);
+            } catch (e) { console.error(e); showMessage('', 'Failed to Load NFTs', 'Please try again.', true); }
+        }
+
+        async function connectWallet() {
+            const btn = document.getElementById('connectButton');
+            const provider = window.phantom?.solana || window.solana;
+            if (!provider) {
+                showMessage('', 'Wallet Not Detected', 'Please install <a href="https://phantom.app/" target="_blank">Phantom Wallet</a> to view your NFTs.');
+                return;
+            }
+            try {
+                btn.disabled = true; btn.textContent = 'Connecting...';
+                const resp = await provider.connect();
+                walletPubkey = resp.publicKey.toString();
+                document.getElementById('walletAddress').textContent = truncate(walletPubkey);
+                btn.textContent = 'Disconnect'; btn.disabled = false;
+                await loadNFTs();
+            } catch (e) {
+                console.error(e);
+                btn.textContent = 'Connect Wallet'; btn.disabled = false;
+                showMessage('', 'Connection Failed', 'Failed to connect wallet. Please try again.');
+            }
+        }
+
+        function disconnectWallet() {
+            const provider = window.phantom?.solana || window.solana;
+            if (provider) provider.disconnect();
+            walletPubkey = null;
+            document.getElementById('walletAddress').textContent = '';
+            document.getElementById('nftCount').textContent = '';
+            document.getElementById('connectButton').textContent = 'Connect Wallet';
+            showMessage('', 'Connect Your Wallet', 'Connect your Phantom wallet to view your NFT collection.');
+        }
+
+        document.getElementById('connectButton').addEventListener('click', () => {
+            walletPubkey ? disconnectWallet() : connectWallet();
+        });
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+        window.addEventListener('load', () => {
+            const provider = window.phantom?.solana || window.solana;
+            if (!provider) showMessage('', 'Wallet Not Detected', 'Please install <a href="https://phantom.app/" target="_blank">Phantom Wallet</a>.');
+            else showMessage('', 'Connect Your Wallet', 'Connect your Phantom wallet to view your NFT collection.');
+        });
+    </script>
+</body>
+</html>
