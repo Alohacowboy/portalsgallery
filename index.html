@@ -35,30 +35,58 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .wallet-info { display: flex; align-items: center; gap: 1rem; }
+        .wallet-info { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
         .nft-count { font-size: 0.9rem; color: #888; }
         .wallet-address { font-size: 0.9rem; color: #aaa; font-family: monospace; }
-        .connect-button {
+        .address-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(153,69,255,0.3);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.85rem;
+            width: 320px;
+            max-width: 50vw;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .address-input:focus { border-color: #9945FF; }
+        .address-input::placeholder { color: #555; }
+        .view-button {
             background: linear-gradient(135deg, #9945FF, #14F195);
             border: none;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.25rem;
             border-radius: 8px;
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
-        .connect-button:hover {
+        .view-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(153,69,255,0.4);
         }
-        .connect-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .view-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .clear-button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            color: #aaa;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .clear-button:hover { background: rgba(255,255,255,0.15); color: #fff; }
         .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
         .message { text-align: center; padding: 4rem 2rem; }
         .message-icon { font-size: 3rem; margin-bottom: 1rem; }
         .message-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .message-text { color: #888; margin-bottom: 1.5rem; }
+        .message-text { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
         .message a { color: #9945FF; text-decoration: none; }
         .loading-spinner {
             display: inline-block;
@@ -170,6 +198,8 @@
             .title { font-size: 1.25rem; }
             .container { padding: 1rem; }
             .nft-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+            .address-input { width: 100%; max-width: 100%; }
+            .wallet-info { width: 100%; }
         }
     </style>
 </head>
@@ -178,8 +208,11 @@
         <div class="title">Solana NFT Gallery</div>
         <div class="wallet-info">
             <span class="nft-count" id="nftCount"></span>
-            <span class="wallet-address" id="walletAddress"></span>
-            <button class="connect-button" id="connectButton">Connect Wallet</button>
+            <input type="text" class="address-input" id="addressInput"
+                   placeholder="Paste Solana wallet address..."
+                   spellcheck="false" autocomplete="off">
+            <button class="view-button" id="viewButton">View NFTs</button>
+            <button class="clear-button" id="clearButton">Clear</button>
         </div>
     </div>
     <div class="container">
@@ -203,6 +236,10 @@
         const HELIUS_URL = 'https://mainnet.helius-rpc.com/?api-key=1d8740dc-e5f4-421c-b823-e1bad1889eff';
         let walletPubkey = null;
 
+        const addressInput = document.getElementById('addressInput');
+        const viewButton = document.getElementById('viewButton');
+        const clearButton = document.getElementById('clearButton');
+
         function resolveUrl(url) {
             if (!url) return '';
             if (url.startsWith('ipfs://')) return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
@@ -210,6 +247,10 @@
         }
 
         function truncate(addr) { return addr ? addr.slice(0,4) + '...' + addr.slice(-4) : ''; }
+
+        function isValidSolanaAddress(addr) {
+            return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr);
+        }
 
         function showMessage(icon, title, text, retry) {
             document.getElementById('content').innerHTML = `
@@ -235,7 +276,7 @@
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
 
         function displayNFTs(nfts) {
-            if (!nfts || !nfts.length) { showMessage('🖼', 'No NFTs Found', 'This wallet doesn\'t own any NFTs yet.'); return; }
+            if (!nfts || !nfts.length) { showMessage('', 'No NFTs Found', 'This wallet doesn\'t own any NFTs yet.'); return; }
             const grid = document.createElement('div');
             grid.className = 'nft-grid';
             nfts.forEach((nft, i) => {
@@ -281,47 +322,40 @@
             } catch (e) { console.error(e); showMessage('', 'Failed to Load NFTs', 'Please try again.', true); }
         }
 
-        async function connectWallet() {
-            const btn = document.getElementById('connectButton');
-            const provider = window.phantom?.solana || window.solana;
-            if (!provider) {
-                showMessage('', 'Wallet Not Detected', 'Please install <a href="https://phantom.app/" target="_blank">Phantom Wallet</a> to view your NFTs.');
+        function viewWallet() {
+            const addr = addressInput.value.trim();
+            if (!addr) return;
+            if (!isValidSolanaAddress(addr)) {
+                showMessage('', 'Invalid Address', 'Please enter a valid Solana wallet address (base58, 32-44 characters).');
                 return;
             }
-            try {
-                btn.disabled = true; btn.textContent = 'Connecting...';
-                const resp = await provider.connect();
-                walletPubkey = resp.publicKey.toString();
-                document.getElementById('walletAddress').textContent = truncate(walletPubkey);
-                btn.textContent = 'Disconnect'; btn.disabled = false;
-                await loadNFTs();
-            } catch (e) {
-                console.error(e);
-                btn.textContent = 'Connect Wallet'; btn.disabled = false;
-                showMessage('', 'Connection Failed', 'Failed to connect wallet. Please try again.');
-            }
-        }
-
-        function disconnectWallet() {
-            const provider = window.phantom?.solana || window.solana;
-            if (provider) provider.disconnect();
-            walletPubkey = null;
-            document.getElementById('walletAddress').textContent = '';
+            walletPubkey = addr;
+            addressInput.disabled = true;
+            viewButton.style.display = 'none';
+            clearButton.style.display = 'inline-block';
             document.getElementById('nftCount').textContent = '';
-            document.getElementById('connectButton').textContent = 'Connect Wallet';
-            showMessage('', 'Connect Your Wallet', 'Connect your Phantom wallet to view your NFT collection.');
+            loadNFTs();
         }
 
-        document.getElementById('connectButton').addEventListener('click', () => {
-            walletPubkey ? disconnectWallet() : connectWallet();
-        });
+        function clearWallet() {
+            walletPubkey = null;
+            addressInput.value = '';
+            addressInput.disabled = false;
+            viewButton.style.display = 'inline-block';
+            clearButton.style.display = 'none';
+            document.getElementById('nftCount').textContent = '';
+            showMessage('', 'Enter Your Wallet Address', 'Paste your Solana wallet address above to view your NFT collection.');
+        }
+
+        viewButton.addEventListener('click', viewWallet);
+        clearButton.addEventListener('click', clearWallet);
+        addressInput.addEventListener('keydown', e => { if (e.key === 'Enter') viewWallet(); });
+
         document.getElementById('modalClose').addEventListener('click', closeModal);
         document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
         window.addEventListener('load', () => {
-            const provider = window.phantom?.solana || window.solana;
-            if (!provider) showMessage('', 'Wallet Not Detected', 'Please install <a href="https://phantom.app/" target="_blank">Phantom Wallet</a>.');
-            else showMessage('', 'Connect Your Wallet', 'Connect your Phantom wallet to view your NFT collection.');
+            showMessage('', 'Enter Your Wallet Address', 'Paste your Solana wallet address above to view your NFT collection.');
         });
     </script>
 </body>
