@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3 Comma Club</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            text-align: center;
+            padding: 3rem 2rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .emoji { font-size: 4rem; margin-bottom: 1rem; }
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #888; font-size: 0.9rem; }
+        .status { color: #666; font-size: 0.8rem; margin-top: 1rem; }
+        .status.success { color: #4CAF50; }
+        .status.error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="emoji">🍾</div>
+        <div class="title">Welcome to the 3 Comma Club!</div>
+        <div class="subtitle">Posting to X...</div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://tres-commas-bot.sjschierling.workers.dev';
+        const BOT_SECRET = 'e68e30a9b34fc38b0af591409446361e6ac03b1d86268880b85141314fd621d2';
+
+        async function postToX() {
+            const statusEl = document.getElementById('status');
+            const subtitleEl = document.querySelector('.subtitle');
+            try {
+                const resp = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Bot-Secret': BOT_SECRET,
+                    },
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    subtitleEl.textContent = 'Posted to X!';
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✓ @alohacowboylabs just announced it';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (err) {
+                subtitleEl.textContent = 'You joined the club!';
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Could not post to X: ' + err.message;
+            }
+        }
+
+        postToX();
+    </script>
+</body>
+</html>
