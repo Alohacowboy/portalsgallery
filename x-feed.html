@@ -6,28 +6,28 @@
     <title>Portals Live Feed</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
+        html, body {
+            height: 100%;
             background: #0a0a0f;
             color: #ffffff;
-            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+        body {
             display: flex;
             flex-direction: column;
         }
         .header {
             background: linear-gradient(135deg, rgba(153,69,255,0.1), rgba(29,155,240,0.1));
             border-bottom: 1px solid rgba(153,69,255,0.2);
-            padding: 1.25rem 2rem;
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            flex-shrink: 0;
         }
         .title {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             background: linear-gradient(135deg, #9945FF, #1DA1F2);
             -webkit-background-clip: text;
@@ -41,25 +41,10 @@
             font-weight: 500;
         }
         .handle:hover { text-decoration: underline; }
-        .feed-container {
+        .feed-frame {
             flex: 1;
-            display: flex;
-            justify-content: center;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-        .timeline-wrapper {
+            border: none;
             width: 100%;
-            max-width: 600px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .footer {
-            text-align: center;
-            padding: 1rem;
-            color: #666;
-            font-size: 0.8rem;
-            border-top: 1px solid rgba(153,69,255,0.1);
         }
     </style>
 </head>
@@ -68,18 +53,10 @@
         <div class="title">Portals Live Feed</div>
         <a class="handle" href="https://x.com/_portals_" target="_blank">@_portals_</a>
     </div>
-    <div class="feed-container">
-        <div class="timeline-wrapper">
-            <a class="twitter-timeline"
-               data-theme="dark"
-               data-chrome="noheader nofooter noborders transparent"
-               data-tweet-limit="20"
-               href="https://twitter.com/_portals_">
-                Loading @_portals_ feed...
-            </a>
-            <script async src="https://platform.twitter.com/widgets.js"></script>
-        </div>
-    </div>
-    <div class="footer">Live feed from X.com</div>
+    <iframe class="feed-frame"
+            src="https://syndication.twitter.com/srv/timeline-profile/screen-name/_portals_?dnt=true&embedId=portals-feed&theme=dark"
+            sandbox="allow-scripts allow-same-origin allow-popups"
+            loading="eager">
+    </iframe>
 </body>
 </html>
