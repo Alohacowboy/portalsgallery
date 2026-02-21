@@ -79,6 +79,13 @@
             color: #e0e0e0;
             word-break: break-word;
         }
+        .tweet-text a { color: #1DA1F2; text-decoration: none; }
+        .tweet-text a:hover { text-decoration: underline; }
+        .rt-badge {
+            color: #888;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
         .footer {
             text-align: center;
             padding: 1.5rem;
@@ -86,6 +93,23 @@
             font-size: 0.8rem;
         }
         .footer a { color: #1DA1F2; text-decoration: none; }
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #888;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px; height: 40px;
+            border: 3px solid rgba(29,161,242,0.2);
+            border-top-color: #1DA1F2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { text-align: center; padding: 4rem 2rem; color: #888; }
+        .error-title { font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
@@ -93,173 +117,107 @@
         <div class="title">Portals Live Feed</div>
         <a class="handle-link" href="https://x.com/_portals_" target="_blank">@_portals_</a>
     </div>
-    <div class="feed">
-    <div class="tweet" style="animation-delay:0.0s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/1965851981307850771" target="_blank">Sep 10, 2025</a>
+    <div class="feed" id="feed">
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>Loading latest posts...</div>
         </div>
-        <div class="tweet-text"><a href="http://x.com/i/article/1965430271702171651" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/article/1965…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.04s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2024256716377116953" target="_blank">Feb 18, 2026</a>
-        </div>
-        <div class="tweet-text">RT @ISHONEI: Just built a game in portals in around 20 minutes, by just using AI prompts<br><br>testing out @_portals_  MCP<br><br>The room contained h…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.08s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2024198295195984136" target="_blank">Feb 18, 2026</a>
-        </div>
-        <div class="tweet-text">To get started follow the setup instructions here: <a href="https://github.com/busportals/portals-mcp" target="_blank" style="color:#1DA1F2;text-decoration:none">github.com/busportals/por…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.12s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2024198293576908807" target="_blank">Feb 18, 2026</a>
-        </div>
-        <div class="tweet-text">The Portals MCP is now live!<br><br>You can use the Portals MCP to setup game logic, arrange scenes, and even prompt to build games. https://t.co/zvabNuOJ7O</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.16s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2023412105849045098" target="_blank">Feb 16, 2026</a>
-        </div>
-        <div class="tweet-text"><a href="https://x.com/i/spaces/1BRKjggrymoGw" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/spaces/1BRKj…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.2s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2022324922929054091" target="_blank">Feb 13, 2026</a>
-        </div>
-        <div class="tweet-text"><a href="https://x.com/i/spaces/1mrGmBPPyNQJy" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/spaces/1mrGm…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.24s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2021991361000747346" target="_blank">Feb 12, 2026</a>
-        </div>
-        <div class="tweet-text">Come build a game on Portals and compete for the top prizes!</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.28s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2020634758691369094" target="_blank">Feb 08, 2026</a>
-        </div>
-        <div class="tweet-text">RT @_bus_bus_bus: Portals has historically been known for its 3D games, but I am excited that with the new tools it is possible to build 2D…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.32s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2017283442061545810" target="_blank">Jan 30, 2026</a>
-        </div>
-        <div class="tweet-text">RT @solanagaming: Roblox this. Roblox that.<br><br>Ya'll need to check out:<br>@_portals_  | @maxdotfun_ | @sendarcadefun<br><br>Built on Solana. Built fo…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.36s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2016327113033621745" target="_blank">Jan 28, 2026</a>
-        </div>
-        <div class="tweet-text">RT @_bus_bus_bus: Gun customizations are going to be a ton of fun - custom colors are cool...but I am really excited to let our creators do…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.4s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2016271969906475463" target="_blank">Jan 27, 2026</a>
-        </div>
-        <div class="tweet-text"><a href="https://x.com/i/spaces/1ynKOMyQogVJR" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/spaces/1ynKO…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.44s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2015517750161219982" target="_blank">Jan 25, 2026</a>
-        </div>
-        <div class="tweet-text">RT @hughmfer: I'm not a 3d modeler.  I barely know how to open blender let alone do anything functional in it.  But with the @sidahuj blend…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.48s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2014458346779361707" target="_blank">Jan 22, 2026</a>
-        </div>
-        <div class="tweet-text"><a href="https://x.com/i/spaces/1ypJdqEkkkYxW" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/spaces/1ypJd…</a></div>
-    </div>
-    <div class="tweet" style="animation-delay:0.52s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals<span style="color:#888;font-size:0.75rem;margin-left:0.5rem">RT</span></span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2013774635096035791" target="_blank">Jan 21, 2026</a>
-        </div>
-        <div class="tweet-text">RT @sunnymaanz: Unboxing a special package from one of the best artists on solana @SCUMSOL <br><br>Have to highlight the work he's done with @som…</div>
-    </div>
-    <div class="tweet" style="animation-delay:0.56s">
-        <div class="tweet-header">
-            <img class="avatar" src="https://pbs.twimg.com/profile_images/1854287528565825536/9mToWeqD_bigger.jpg" alt="" loading="lazy">
-            <div>
-                <span class="tweet-name">Portals</span>
-                <span class="tweet-handle">@_portals_</span>
-            </div>
-            <a class="tweet-date" href="https://x.com/_portals_/status/2013280515990691960" target="_blank">Jan 19, 2026</a>
-        </div>
-        <div class="tweet-text"><a href="https://x.com/i/spaces/1RDGlAgwXdEJL" target="_blank" style="color:#1DA1F2;text-decoration:none">x.com/i/spaces/1RDGl…</a></div>
-    </div>
     </div>
     <div class="footer"><a href="https://x.com/_portals_" target="_blank">View more on X</a></div>
+
+    <script>
+        const SYNDICATION_URL = 'https://syndication.twitter.com/srv/timeline-profile/screen-name/_portals_?dnt=true&theme=dark';
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(SYNDICATION_URL);
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            const parts = dateStr.split(' ');
+            return parts[1] + ' ' + parts[2] + ', ' + parts[5];
+        }
+
+        function linkifyText(text, entities) {
+            if (!entities || !entities.urls) return escapeHtml(text).replace(/\n/g, '<br>');
+            // Build replacement map sorted by index descending
+            const replacements = entities.urls
+                .map(u => ({ start: u.indices[0], end: u.indices[1], html: '<a href="' + u.expanded_url + '" target="_blank">' + escapeHtml(u.display_url) + '</a>' }))
+                .sort((a, b) => b.start - a.start);
+            let result = text;
+            for (const r of replacements) {
+                result = result.slice(0, r.start) + '\x00' + (replacements.indexOf(r)) + '\x01' + result.slice(r.end);
+            }
+            result = escapeHtml(result);
+            for (let i = 0; i < replacements.length; i++) {
+                result = result.replace('\x00' + i + '\x01', replacements[i].html);
+            }
+            return result.replace(/\n/g, '<br>');
+        }
+
+        function renderTweets(tweets) {
+            const feed = document.getElementById('feed');
+            if (!tweets.length) {
+                feed.innerHTML = '<div class="error"><div class="error-title">No posts found</div></div>';
+                return;
+            }
+            feed.innerHTML = tweets.map((tw, i) => `
+                <div class="tweet" style="animation-delay:${i * 0.04}s">
+                    <div class="tweet-header">
+                        <img class="avatar" src="${tw.avatar}" alt="" loading="lazy">
+                        <div>
+                            <span class="tweet-name">${escapeHtml(tw.name)}${tw.isRT ? '<span class="rt-badge">RT</span>' : ''}</span>
+                            <span class="tweet-handle">@${tw.handle}</span>
+                        </div>
+                        <a class="tweet-date" href="https://x.com/${tw.handle}/status/${tw.id}" target="_blank">${tw.date}</a>
+                    </div>
+                    <div class="tweet-text">${tw.text}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadFeed() {
+            try {
+                const res = await fetch(PROXY_URL);
+                const html = await res.text();
+                const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
+                if (!match) throw new Error('Could not parse feed data');
+
+                const data = JSON.parse(match[1]);
+                const entries = data.props.pageProps.timeline.entries;
+
+                const tweets = entries
+                    .filter(e => e.type === 'tweet')
+                    .slice(0, 15)
+                    .map(e => {
+                        const t = e.content.tweet;
+                        return {
+                            name: t.user.name,
+                            handle: t.user.screen_name,
+                            avatar: t.user.profile_image_url_https.replace('_normal', '_bigger'),
+                            text: linkifyText(t.text, t.entities),
+                            date: formatDate(t.created_at),
+                            id: t.id_str,
+                            isRT: t.text.startsWith('RT @')
+                        };
+                    });
+
+                renderTweets(tweets);
+            } catch (e) {
+                console.error('Feed load error:', e);
+                document.getElementById('feed').innerHTML = `
+                    <div class="error">
+                        <div class="error-title">Couldn't load feed</div>
+                        <div style="margin-top:0.5rem">
+                            <a href="https://x.com/_portals_" target="_blank" style="color:#1DA1F2">View @_portals_ on X</a>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        loadFeed();
+    </script>
 </body>
 </html>
