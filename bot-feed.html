@@ -79,8 +79,6 @@
             color: #e0e0e0;
             word-break: break-word;
         }
-        .tweet-text a { color: #FFD700; text-decoration: none; }
-        .tweet-text a:hover { text-decoration: underline; }
         .footer {
             text-align: center;
             padding: 1.5rem;
@@ -121,8 +119,7 @@
     <div class="footer"><a href="https://x.com/alohacowboylabs" target="_blank">View more on X</a></div>
 
     <script>
-        const SYNDICATION_URL = 'https://syndication.twitter.com/srv/timeline-profile/screen-name/alohacowboylabs?dnt=true&theme=dark';
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(SYNDICATION_URL);
+        const WORKER_URL = 'https://tres-commas-bot.sjschierling.workers.dev';
 
         function escapeHtml(str) {
             const d = document.createElement('div');
@@ -130,74 +127,39 @@
             return d.innerHTML;
         }
 
-        function formatDate(dateStr) {
-            const parts = dateStr.split(' ');
-            return parts[1] + ' ' + parts[2] + ', ' + parts[5];
+        function formatDate(isoStr) {
+            const d = new Date(isoStr);
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
         }
 
-        function linkifyText(text, entities) {
-            if (!entities || !entities.urls) return escapeHtml(text).replace(/\n/g, '<br>');
-            const replacements = entities.urls
-                .map(u => ({ start: u.indices[0], end: u.indices[1], html: '<a href="' + u.expanded_url + '" target="_blank">' + escapeHtml(u.display_url) + '</a>' }))
-                .sort((a, b) => b.start - a.start);
-            let result = text;
-            for (const r of replacements) {
-                result = result.slice(0, r.start) + '\x00' + (replacements.indexOf(r)) + '\x01' + result.slice(r.end);
-            }
-            result = escapeHtml(result);
-            for (let i = 0; i < replacements.length; i++) {
-                result = result.replace('\x00' + i + '\x01', replacements[i].html);
-            }
-            return result.replace(/\n/g, '<br>');
-        }
-
-        function renderTweets(tweets) {
+        function renderTweets(user, tweets) {
             const feed = document.getElementById('feed');
-            if (!tweets.length) {
+            if (!tweets || !tweets.length) {
                 feed.innerHTML = '<div class="error"><div class="error-title">No posts yet</div><div style="margin-top:0.5rem;color:#888">Collect a Tres Commas bottle to see the first post!</div></div>';
                 return;
             }
             feed.innerHTML = tweets.map((tw, i) => `
                 <div class="tweet" style="animation-delay:${i * 0.04}s">
                     <div class="tweet-header">
-                        <img class="avatar" src="${tw.avatar}" alt="" loading="lazy">
+                        <img class="avatar" src="${user.avatar}" alt="" loading="lazy">
                         <div>
-                            <span class="tweet-name">${escapeHtml(tw.name)}</span>
-                            <span class="tweet-handle">@${tw.handle}</span>
+                            <span class="tweet-name">${escapeHtml(user.name)}</span>
+                            <span class="tweet-handle">@${user.handle}</span>
                         </div>
-                        <a class="tweet-date" href="https://x.com/${tw.handle}/status/${tw.id}" target="_blank">${tw.date}</a>
+                        <a class="tweet-date" href="https://x.com/${user.handle}/status/${tw.id}" target="_blank">${formatDate(tw.created_at)}</a>
                     </div>
-                    <div class="tweet-text">${tw.text}</div>
+                    <div class="tweet-text">${escapeHtml(tw.text).replace(/\n/g, '<br>')}</div>
                 </div>
             `).join('');
         }
 
         async function loadFeed() {
             try {
-                const res = await fetch(PROXY_URL);
-                const html = await res.text();
-                const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/);
-                if (!match) throw new Error('Could not parse feed data');
-
-                const data = JSON.parse(match[1]);
-                const entries = data.props.pageProps.timeline.entries;
-
-                const tweets = entries
-                    .filter(e => e.type === 'tweet')
-                    .slice(0, 15)
-                    .map(e => {
-                        const t = e.content.tweet;
-                        return {
-                            name: t.user.name,
-                            handle: t.user.screen_name,
-                            avatar: t.user.profile_image_url_https.replace('_normal', '_bigger'),
-                            text: linkifyText(t.text, t.entities),
-                            date: formatDate(t.created_at),
-                            id: t.id_str,
-                        };
-                    });
-
-                renderTweets(tweets);
+                const res = await fetch(WORKER_URL);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+                renderTweets(data.tweets.user, data.tweets.tweets);
             } catch (e) {
                 console.error('Feed load error:', e);
                 document.getElementById('feed').innerHTML = `
